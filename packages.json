@@ -1,0 +1,134 @@
+{
+  "package_manager": [
+    {
+      "type": "pacman",
+      "sudo": true,
+      "packages": [
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "base-devel"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "gcc"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "clang"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "sddm"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "sddm"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "gdm"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "xorg"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "plasma"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "plasma-wayland-session"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "kde-applications"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "eog"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "cmake"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "boost"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "steam"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "qtcreator"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "firefox"
+        }
+      ]
+    },
+    {
+      "type": "yay",
+      "sudo": false,
+      "packages": [
+        {
+          "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
+          "package": "qbittorrent-git"
+        },
+        {
+          "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
+          "package": "visual-studio-code-bin"
+        },
+        {
+          "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
+          "package": "jetbrains-toolbox"
+        },
+        {
+          "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
+          "package": "flatpak"
+        },
+        {
+          "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
+          "package": "spotify"
+        },
+        {
+          "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
+          "package": "lutris"
+        },
+        {
+          "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
+          "package": "nasm"
+        },
+        {
+          "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
+          "package": "scenebuilder"
+        }
+      ]
+    }
+  ],
+  "custom": [
+    {
+      "name": "app_name",
+      "message": "install_message",
+      "path": "path/to/custom/install/script"
+    },
+    {
+      "name": "yay",
+      "message": "install_message",
+      "path": "path/to/custom/install/script"
+    },
+    {
+      "name": "aliases",
+      "message": "install_message",
+      "path": "path/to/custom/install/script"
+    },
+    {
+      "name": "synergy",
+      "message": "install_message",
+      "path": "path/to/custom/install/script"
+    }
+  ]
+}
