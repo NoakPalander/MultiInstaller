@@ -48,7 +48,7 @@ data class Head(
 
 fun main() {
     // Reads the json data into a string
-    val resources = BufferedReader(FileReader(File("test_packages.json"))).readLines().joinToString("\n")
+    val resources = BufferedReader(FileReader(File("packages.json"))).readLines().joinToString("\n")
 
     // Deserializes the json data
     val packageHead = ObjectMapper().readValue(resources, Head::class.java)
