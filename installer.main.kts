@@ -8,8 +8,11 @@
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.io.*
+import java.io.File
+import java.net.MalformedURLException
+import java.net.URL
 import java.util.concurrent.TimeUnit
+import kotlin.system.exitProcess
 
 
 data class Package(
@@ -46,27 +49,44 @@ data class Head(
     @JsonProperty("custom") val custom: List<Custom>?
 )
 
+// Deserializes the resource into a Head object
+fun deserialize(packageFile: String): Head {
+    return try {
+        val raw = URL(packageFile).readText()
+        ObjectMapper().readValue(raw, Head::class.java)
+    }
+    // Invalid URL format treat as file
+    catch(_: MalformedURLException) {
+        val raw = File(packageFile).readText()
+        ObjectMapper().readValue(raw, Head::class.java)
+    }
+}
+
 fun main() {
-    // Reads the json data into a string
-    val resources = BufferedReader(FileReader(File("packages.json"))).readLines().joinToString("\n")
+    // Gets the head object from the start argument
+    // TODO: Parse the start arguments better
+    val head = deserialize(args[0])
 
-    // Deserializes the json data
-    val packageHead = ObjectMapper().readValue(resources, Head::class.java)
-
-
-    if (packageHead.packageManager != null || packageHead.custom != null)
+    if (head.packageManager != null || head.custom != null)
         println("Installing following packages:")
 
-    // Package manager applications
-    println(packageHead.packageManager?.flatMap { packages ->
+    // Prints the applications from the package manager list, if there is any
+    println(head.packageManager?.flatMap { packages ->
         mutableListOf(*packages.packages.toTypedArray()).map { it.app }
     }?.joinToString("\n"))
 
-    // Custom applications
-    println(packageHead.custom?.joinToString("\n") { it.name })
+    // Prints the applications from the custom list, if there is any
+    head.custom?.also { customs -> println(customs.joinToString("\n") { it.name }) }
+
+    println("\nProceed with the installation? [y\\n]")
+    print(">> ").also { System.out.flush() }
+    if (readLine().toString().toLowerCase()[0] == 'n') {
+        println("\nTerminating installation..")
+        exitProcess(0)
+    }
 
     // Install the package managers' packages first
-    packageHead.packageManager?.forEach {
+    head.packageManager?.forEach {
         for (module in it.packages) {
             val command = "${if (it.sudo) "sudo " else ""}${it.type} ${module.flags.joinToString(" ")} ${module.app}"
             command.runAsProcess()
@@ -74,7 +94,7 @@ fun main() {
     }
 
     // Then runs the custom scripts
-    packageHead.custom?.forEach {
+    head.custom?.forEach {
         // TODO: Check if URL or local file and runs the file
     }
 
