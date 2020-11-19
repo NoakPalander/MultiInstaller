@@ -67,6 +67,14 @@
         {
           "flags": [ "-S", "--noconfirm" ],
           "package": "firefox"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "kcm-wacomtablet"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": [ "xf86-input-wacom" ]
         }
       ]
     },
