@@ -75,6 +75,10 @@
         {
           "flags": [ "-S", "--noconfirm" ],
           "package": "xf86-input-wacom"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "linux-headers"
         }
       ]
     },
