@@ -133,7 +133,11 @@
         {
           "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
           "package": "scenebuilder"
-        }
+        },
+	{
+	  "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
+	  "package": "mhwd"
+	}
       ]
     }
   ],
