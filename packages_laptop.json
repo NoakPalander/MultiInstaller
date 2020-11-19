@@ -134,10 +134,14 @@
           "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
           "package": "scenebuilder"
         },
-	{
-	  "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
-	  "package": "mhwd"
-	}
+        {
+          "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
+          "package": "mhwd"
+        },
+        {
+          "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
+          "package": "optimus-manager-qt"
+        }
       ]
     }
   ],
