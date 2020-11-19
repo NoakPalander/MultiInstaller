@@ -15,6 +15,15 @@ import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
 
 
+fun String.runAsProcess(workingDir: File = File(System.getProperty("user.dir"))) {
+    ProcessBuilder(*split(" ").toTypedArray())
+        .directory(workingDir)
+        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .start()
+        .waitFor(1, TimeUnit.HOURS)
+}
+
 data class Package(
     @JsonProperty("flags") val flags: List<String>,
     @JsonProperty("package") val app: String
@@ -29,19 +38,11 @@ data class PackageManager(
 
 // Custom install scripts if you need to e.g build from source
 data class Custom(
+    @JsonProperty("prioritize") val prioritize: Boolean,
     @JsonProperty("name") val name: String,
     @JsonProperty("message") val message: String,
     @JsonProperty("path") val path: String
 )
-
-fun String.runAsProcess(workingDir: File = File(System.getProperty("user.dir"))) {
-    ProcessBuilder(*split(" ").toTypedArray())
-        .directory(workingDir)
-        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-        .redirectError(ProcessBuilder.Redirect.INHERIT)
-        .start()
-        .waitFor(1, TimeUnit.HOURS)
-}
 
 // Outer object containing a list of package managers and custom scripts objects
 data class Head(
@@ -101,4 +102,14 @@ fun main() {
     println("Done installing packages..")
 }
 
-main()
+fun test() {
+    val head = deserialize(args[0])
+    head.custom?.forEach {
+        println(it.message)
+
+        "custom_builds/yay.kts".runAsProcess()
+        //it.name.runAsProcess(File("${File(System.getProperty("user.dir")).absolutePath}/${it.path}"))
+    }
+}
+
+test()

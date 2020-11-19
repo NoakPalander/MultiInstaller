@@ -74,7 +74,7 @@
         },
         {
           "flags": [ "-S", "--noconfirm" ],
-          "package": [ "xf86-input-wacom" ]
+          "package": "xf86-input-wacom"
         }
       ]
     },
@@ -119,24 +119,10 @@
   ],
   "custom": [
     {
-      "name": "app_name",
-      "message": "install_message",
-      "path": "path/to/custom/install/script"
-    },
-    {
-      "name": "yay",
-      "message": "install_message",
-      "path": "path/to/custom/install/script"
-    },
-    {
-      "name": "aliases",
-      "message": "install_message",
-      "path": "path/to/custom/install/script"
-    },
-    {
-      "name": "synergy",
-      "message": "install_message",
-      "path": "path/to/custom/install/script"
+      "prioritize": true,
+      "name": "yay.kts",
+      "message": "Building 'yay' from source!",
+      "path": "custom_builds"
     }
   ]
 }
