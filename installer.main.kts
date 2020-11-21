@@ -102,14 +102,4 @@ fun main() {
     println("Done installing packages..")
 }
 
-fun test() {
-    val head = deserialize(args[0])
-    head.custom?.forEach {
-        println(it.message)
-
-        "custom_builds/yay.kts".runAsProcess()
-        //it.name.runAsProcess(File("${File(System.getProperty("user.dir")).absolutePath}/${it.path}"))
-    }
-}
-
-test()
+main()

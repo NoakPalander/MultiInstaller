@@ -79,6 +79,18 @@
         {
           "flags": [ "-S", "--noconfirm" ],
           "package": "linux-headers"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "gradle"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "encfs"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "tree"
         }
       ]
     },
