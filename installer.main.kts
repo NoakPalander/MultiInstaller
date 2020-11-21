@@ -29,22 +29,34 @@ data class Package(
     @JsonProperty("package") val app: String
 )
 
-// Includes package managers such as pacman/yay, etc
 data class PackageManager(
     @JsonProperty("type") val type: String,
     @JsonProperty("sudo") val sudo: Boolean,
     @JsonProperty("packages") val packages: List<Package>
 )
 
-// Custom install scripts if you need to e.g build from source
-data class Custom(
+data class LocalCustom(
     @JsonProperty("prioritize") val prioritize: Boolean,
     @JsonProperty("name") val name: String,
     @JsonProperty("message") val message: String,
-    @JsonProperty("path") val path: String
+    @JsonProperty("path") val path: String)
+{
+    operator fun invoke() {
+        println("LOCAL!")
+    }
+}
+
+data class WebCustom(
+    @JsonProperty("prioritize") val prioritize: Boolean,
+    @JsonProperty("url") val urlString: String,
+    @JsonProperty("message") val message: String
 )
 
-// Outer object containing a list of package managers and custom scripts objects
+data class Custom(
+    @JsonProperty("local") val local: LocalCustom?,
+    @JsonProperty("web") val web: WebCustom?
+)
+
 data class Head(
     @JsonProperty("package_manager") val packageManager: List<PackageManager>?,
     @JsonProperty("custom") val custom: List<Custom>?
@@ -63,6 +75,28 @@ fun deserialize(packageFile: String): Head {
     }
 }
 
+fun runWebScript(urlString: String) {
+    // Create temporary directory
+    try {
+        val temp = File(System.getProperty("user.dir"), ".temp")
+        if (temp.exists())
+            temp.delete()
+
+        temp.mkdir()
+        File("${temp.path}/web_script").writeText(URL(urlString).readText()) // TODO: error, getting newlines combined with '\r'
+        println(URL(urlString).readText())
+        "chmod +x web_script".runAsProcess(temp)
+        "./.temp/web_script".runAsProcess()
+    }
+    catch(e: Exception) {
+        println(e)
+    }
+}
+
+fun runLocalScript() {
+
+}
+
 fun main() {
     // Gets the head object from the start argument
     // TODO: Parse the start arguments better
@@ -72,12 +106,19 @@ fun main() {
         println("Installing following packages:")
 
     // Prints the applications from the package manager list, if there is any
-    println(head.packageManager?.flatMap { packages ->
-        mutableListOf(*packages.packages.toTypedArray()).map { it.app }
-    }?.joinToString("\n"))
+    head.packageManager?.forEach { manager ->
+        manager.packages.forEach {
+            println(it.app)
+        }
+    }
 
     // Prints the applications from the custom list, if there is any
-    head.custom?.also { customs -> println(customs.joinToString("\n") { it.name }) }
+    head.custom?.forEach {
+        when {
+            it.local != null -> println(it.local.name)
+            it.web != null -> println(it.web.urlString)
+        }
+    }
 
     println("\nProceed with the installation? [y\\n]")
     print(">> ").also { System.out.flush() }
@@ -95,7 +136,12 @@ fun main() {
     }
 
     // Then runs the custom scripts
-    head.custom?.forEach {
+    head.custom?.forEach { type ->
+        when {
+            type.local != null -> runLocalScript()
+            type.web != null ->  runWebScript(type.web.urlString)
+            else -> throw RuntimeException("Invalid custom build type. Either specify 'local' or 'web'!")
+        }
         // TODO: Check if URL or local file and runs the file
     }
 

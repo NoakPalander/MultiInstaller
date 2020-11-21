@@ -22,10 +22,6 @@
         },
         {
           "flags": [ "-S", "--noconfirm" ],
-          "package": "sddm"
-        },
-        {
-          "flags": [ "-S", "--noconfirm" ],
           "package": "gdm"
         },
         {
@@ -135,10 +131,19 @@
   ],
   "custom": [
     {
-      "prioritize": true,
-      "name": "yay.kts",
-      "message": "Building 'yay' from source!",
-      "path": "custom_builds"
+      "local": {
+        "prioritize": true,
+        "name": "yay.kts",
+        "message": "Building 'yay' from source!",
+        "path": "custom_builds"
+      }
+    },
+    {
+      "web": {
+        "prioritize": true,
+        "url": "https://raw.githubusercontent.com/NoakPalander/MultiInstaller/master/install_script.kts",
+        "message": "Building 'yay' from source via a weblink"
+      }
     }
   ]
 }
