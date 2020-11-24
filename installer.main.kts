@@ -38,18 +38,12 @@ data class PackageManager(
 data class LocalCustom(
     @JsonProperty("prioritize") val prioritize: Boolean,
     @JsonProperty("name") val name: String,
-    @JsonProperty("message") val message: String,
     @JsonProperty("path") val path: String)
-{
-    operator fun invoke() {
-        println("LOCAL!")
-    }
-}
 
 data class WebCustom(
     @JsonProperty("prioritize") val prioritize: Boolean,
-    @JsonProperty("url") val urlString: String,
-    @JsonProperty("message") val message: String
+    @JsonProperty("url") val url: String,
+    @JsonProperty("name") val name: String
 )
 
 data class Custom(
@@ -75,48 +69,99 @@ fun deserialize(packageFile: String): Head {
     }
 }
 
-fun runWebScript(urlString: String) {
-    // Create temporary directory
+fun runWebScript(url: String, name: String) {
     try {
+        // Creates a temporary directory
         val temp = File(System.getProperty("user.dir"), ".temp")
         if (temp.exists())
             temp.delete()
 
         temp.mkdir()
-        File("${temp.path}/web_script").writeText(URL(urlString).readText()) // TODO: error, getting newlines combined with '\r'
-        println(URL(urlString).readText())
-        "chmod +x web_script".runAsProcess(temp)
-        "./.temp/web_script".runAsProcess()
+        println("Entering a temporary directory")
+
+        // Downloads and runs the file
+        File("${temp.path}/$name").writeText(URL(url).readText().replace("\r", ""))
+        "chmod +x $name".runAsProcess(temp)
+        "./.temp/$name".runAsProcess()
     }
     catch(e: Exception) {
-        println(e)
+        println("Exception caught: ${e.message}")
     }
+
+    // Deletes the temporary directory
+    File(System.getProperty("user.dir"), ".temp").deleteRecursively()
+    println("Cleaning up..\n")
 }
 
-fun runLocalScript() {
+fun runLocalScript(path: String, name: String) {
+    val dir = File(System.getProperty("user.dir"), path)
+    "chmod +x $name".runAsProcess(dir)
+    "./$name".runAsProcess(dir)
+}
 
+class Options {
+    companion object {
+        fun extract(args: Array<String>): List<Pair<String, List<String>?>> {
+            val out = arrayListOf<Pair<String, List<String>?>>()
+            for (arg: String in args) {
+                if (arg.contains("=")) {
+                    val split = arg.split("=")
+                    out.add(Pair(split[0], split[1].split(",")))
+                }
+                else {
+                    out.add(Pair(arg, null))
+                }
+            }
+
+            return out
+        }
+
+        fun help() {
+            println("\n" + """
+                Usage: ./installer.main.kts [options] package_file.json
+                Options:
+                  --help -h     Displays this message.
+            """.trimIndent() + "\n")
+
+            exitProcess(0)
+        }
+    }
 }
 
 fun main() {
+    //
+    val flags: HashMap<String, () -> Unit> = hashMapOf(
+        "--help" to (Options)::help, "-h" to (Options)::help
+    )
+
+    if (args.isEmpty()) {
+        throw RuntimeException("Invalid start arguments.. try running --help for more info!")
+    }
+    else {
+        // TODO: Run with proper arguments..
+        Options.extract(args)
+        exitProcess(0)
+    }
+
     // Gets the head object from the start argument
     // TODO: Parse the start arguments better
     val head = deserialize(args[0])
 
     if (head.packageManager != null || head.custom != null)
-        println("Installing following packages:")
+        println("\nInstalling following packages:")
 
     // Prints the applications from the package manager list, if there is any
     head.packageManager?.forEach { manager ->
         manager.packages.forEach {
-            println(it.app)
+            println("\t${it.app}")
         }
     }
 
     // Prints the applications from the custom list, if there is any
     head.custom?.forEach {
         when {
-            it.local != null -> println(it.local.name)
-            it.web != null -> println(it.web.urlString)
+            it.local != null -> println("\t${it.local.name}")
+            it.web != null -> println("\t${it.web.url}")
         }
     }
 
@@ -138,14 +183,13 @@ fun main() {
     // Then runs the custom scripts
     head.custom?.forEach { type ->
         when {
-            type.local != null -> runLocalScript()
-            type.web != null ->  runWebScript(type.web.urlString)
+            type.local != null -> runLocalScript(type.local.path, type.local.name)
+            type.web != null ->  runWebScript(type.web.url, type.web.name)
             else -> throw RuntimeException("Invalid custom build type. Either specify 'local' or 'web'!")
         }
-        // TODO: Check if URL or local file and runs the file
     }
 
-    println("Done installing packages..")
+    println("\nDone installing packages..")
 }
 
 main()

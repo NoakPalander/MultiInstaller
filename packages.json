@@ -87,6 +87,14 @@
         {
           "flags": [ "-S", "--noconfirm" ],
           "package": "tree"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "python-pip"
+        },
+        {
+          "flags": [ "-S", "--noconfirm" ],
+          "package": "python-virtualenv"
         }
       ]
     },
