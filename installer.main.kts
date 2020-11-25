@@ -56,6 +56,68 @@ data class Head(
     @JsonProperty("custom") val custom: List<Custom>?
 )
 
+class Arguments {
+    companion object {
+        var targetPackages: List<String>? = null
+        var targetOrder: List<String>? = null
+
+        // Parses the start arguments and groups them into commands/args combos
+        fun extract(args: Array<String>): List<Pair<String, List<String>?>> {
+            val out = arrayListOf<Pair<String, List<String>?>>()
+            for (arg: String in args) {
+                if (arg.contains("=")) {
+                    val split = arg.split("=")
+                    out.add(Pair(split[0], split[1].split(",")))
+                }
+                else {
+                    out.add(Pair(arg, null))
+                }
+            }
+
+            return out
+        }
+
+        fun help(ignored: List<String>?) {
+            println("\n" + """
+                Usage: ./installer.main.kts [arguments..] [path to package].json
+                Usage: ./installer.main.kts [arguments..] [url to raw package json file]
+                Optional arguments:
+                  --help -h                             Displays this message.
+                  --target=[option(1)] -t=[option(1)]   Sets a specific target to build from the package file.
+                  --order=[option(..),]                 Specifies which managers to build from in what order, ignores the order declared in the package file.
+                  --install -i                          Installs the application to the linux system.
+                  --uninstall -u                        Uninstalls the application from the linux system.
+            """.trimIndent() + "\n")
+
+            exitProcess(0)
+        }
+
+        fun target(args: List<String>?) {
+            if (args == null)
+                throw RuntimeException("Values for --target and or -t is required! Consult --help for more info.")
+
+            targetPackages = args
+        }
+
+        fun order(args: List<String>?) {
+            if (args == null)
+                throw RuntimeException("Values for --order -o is required! Consult --help for more info.")
+
+            targetOrder = args
+        }
+
+        // Installs the application on the linux system
+        fun install(ignored: List<String>?) {
+            throw NotImplementedError("The Arguments.install is not yet implemented!")
+        }
+
+        // Uninstalls the application from the linux system
+        fun uninstall(ignored: List<String>?) {
+            throw NotImplementedError("The Arguments.uninstall is not yet implemented!")
+        }
+    }
+}
+
 // Deserializes the resource into a Head object
 fun deserialize(packageFile: String): Head {
     return try {
@@ -69,6 +131,7 @@ fun deserialize(packageFile: String): Head {
     }
 }
 
+// Runs an install script from a url
 fun runWebScript(url: String, name: String) {
     try {
         // Creates a temporary directory
@@ -93,54 +156,41 @@ fun runWebScript(url: String, name: String) {
     println("Cleaning up..\n")
 }
 
+// Runs an install script locally
 fun runLocalScript(path: String, name: String) {
     val dir = File(System.getProperty("user.dir"), path)
     "chmod +x $name".runAsProcess(dir)
     "./$name".runAsProcess(dir)
 }
 
-class Options {
-    companion object {
-        fun extract(args: Array<String>): List<Pair<String, List<String>?>> {
-            val out = arrayListOf<Pair<String, List<String>?>>()
-            for (arg: String in args) {
-                if (arg.contains("=")) {
-                    val split = arg.split("=")
-                    out.add(Pair(split[0], split[1].split(",")))
-                }
-                else {
-                    out.add(Pair(arg, null))
-                }
-            }
+fun install() {
 
-            return out
-        }
-
-        fun help() {
-            println("\n" + """
-                Usage: ./installer.main.kts [options] package_file.json
-                Options:
-                  --help -h     Displays this message.
-            """.trimIndent() + "\n")
-
-            exitProcess(0)
-        }
-    }
 }
 
 fun main() {
-    //
-    val flags: HashMap<String, () -> Unit> = hashMapOf(
-        "--help" to (Options)::help, "-h" to (Options)::help
+    /*
+    * TODO:
+    *
+    * */
+
+    val flags: HashMap<String, (List<String>?) -> Unit> = hashMapOf(
+        "--help" to (Arguments)::help, "-h" to (Arguments)::help,
+        "--target" to (Arguments)::target, "-t" to (Arguments)::target
     )
 
     if (args.isEmpty()) {
         throw RuntimeException("Invalid start arguments.. try running --help for more info!")
     }
     else {
-        // TODO: Run with proper arguments..
-        Options.extract(args)
-        exitProcess(0)
+        Arguments.extract(args).forEach { unpacked ->
+            if (flags.contains(unpacked.first)) {
+                flags[unpacked.first]!!.invoke(unpacked.second)
+            }
+            else {
+                println("Command '${unpacked.first.replace("--", "")}' not found..")
+                exitProcess(0)
+            }
+        }
     }
 
     // Gets the head object from the start argument
