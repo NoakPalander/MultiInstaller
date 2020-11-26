@@ -88,8 +88,8 @@ class Arguments {
                   --install -i                          Installs the application to the linux system.
                   --uninstall -u                        Uninstalls the application from the linux system.
             """.trimIndent() + "\n")
-
-            exitProcess(0)
+            println("\n")
+            //exitProcess(0)
         }
 
         fun target(args: List<String>?) {
@@ -163,39 +163,19 @@ fun runLocalScript(path: String, name: String) {
     "./$name".runAsProcess(dir)
 }
 
-fun install() {
-
-}
-
-fun main() {
-    /*
-    * TODO:
-    *
-    * */
-
-    val flags: HashMap<String, (List<String>?) -> Unit> = hashMapOf(
-        "--help" to (Arguments)::help, "-h" to (Arguments)::help,
-        "--target" to (Arguments)::target, "-t" to (Arguments)::target
-    )
-
-    if (args.isEmpty()) {
-        throw RuntimeException("Invalid start arguments.. try running --help for more info!")
+fun install(script: String) {
+    // Deserializes the build script
+    val raw = try {
+        println("URL")
+        ""
     }
-    else {
-        Arguments.extract(args).forEach { unpacked ->
-            if (flags.contains(unpacked.first)) {
-                flags[unpacked.first]!!.invoke(unpacked.second)
-            }
-            else {
-                println("Command '${unpacked.first.replace("--", "")}' not found..")
-                exitProcess(0)
-            }
-        }
+    catch(e: Exception) {
+        println("Local")
+        ""
     }
 
-    // Gets the head object from the start argument
-    // TODO: Parse the start arguments better
-    val head = deserialize(args[0])
+    exitProcess(0)
+    val head = deserialize(raw)
 
     if (head.packageManager != null || head.custom != null)
         println("\nInstalling following packages:")
@@ -240,6 +220,60 @@ fun main() {
     }
 
     println("\nDone installing packages..")
+}
+
+fun main() {
+    /*
+    * TODO:
+    *
+    * */
+
+    val flags: HashMap<String, (List<String>?) -> Unit> = hashMapOf(
+        "--help" to (Arguments)::help, "-h" to (Arguments)::help,
+        "--target" to (Arguments)::target, "-t" to (Arguments)::target
+    )
+
+    if (args.isEmpty()) {
+        throw RuntimeException("Invalid start arguments.. try running --help for more info!")
+    }
+    else {
+        // Iterates over the extracted arguments
+        val script: String = Arguments.extract(args).let { list ->
+            list.forEach { unpacked ->
+                if (unpacked.first.startsWith("--") || unpacked.first.startsWith("-")) {
+                    // If an argument was found, force-invoke it
+                    if (flags.contains(unpacked.first)) {
+                        flags[unpacked.first]!!.invoke(unpacked.second)
+                    }
+                    // Otherwise, invalid command found
+                    else {
+                        println("Command '${unpacked.first.replace("--", "")}' not found..")
+                    }
+                }
+            }
+
+            // Looks for the install script
+            list.forEach {
+                // Tries to match against '-' and '--'
+                Regex("^(?!-).*\$").find(it.first)?.value?.also { match ->
+                    return@let match
+                }
+            }
+
+            // No valid install script seems to have been passed
+            throw RuntimeException("No valid install script seems to have been passed!")
+        }
+
+        install(script)
+    }
+
+    install("")
+}
+
+fun test() {
+    Arguments.extract(args).forEach { unpacked ->
+        println("${unpacked.first}\t${unpacked.second}")
+    }
 }
 
 main()
