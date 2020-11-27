@@ -9,6 +9,7 @@
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.File
+import java.io.FileReader
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.concurrent.TimeUnit
@@ -58,7 +59,7 @@ data class Head(
 
 class Arguments {
     companion object {
-        var targetPackages: List<String>? = null
+        var targetManagers: List<String>? = null
         var targetOrder: List<String>? = null
 
         // Parses the start arguments and groups them into commands/args combos
@@ -87,16 +88,15 @@ class Arguments {
                   --order=[option(..),]                 Specifies which managers to build from in what order, ignores the order declared in the package file.
                   --install -i                          Installs the application to the linux system.
                   --uninstall -u                        Uninstalls the application from the linux system.
-            """.trimIndent() + "\n")
-            println("\n")
-            //exitProcess(0)
+            """.trimIndent() + "\n\n")
+            exitProcess(0)
         }
 
         fun target(args: List<String>?) {
             if (args == null)
                 throw RuntimeException("Values for --target and or -t is required! Consult --help for more info.")
 
-            targetPackages = args
+            targetManagers = args
         }
 
         fun order(args: List<String>?) {
@@ -121,13 +121,11 @@ class Arguments {
 // Deserializes the resource into a Head object
 fun deserialize(packageFile: String): Head {
     return try {
-        val raw = URL(packageFile).readText()
-        ObjectMapper().readValue(raw, Head::class.java)
+        ObjectMapper().readValue(URL(packageFile).readText().replace("\r", ""), Head::class.java)
     }
     // Invalid URL format treat as file
     catch(_: MalformedURLException) {
-        val raw = File(packageFile).readText()
-        ObjectMapper().readValue(raw, Head::class.java)
+        ObjectMapper().readValue(File(packageFile).readText(), Head::class.java)
     }
 }
 
@@ -164,17 +162,20 @@ fun runLocalScript(path: String, name: String) {
 }
 
 fun install(script: String) {
-    // Deserializes the build script
-    val raw = try {
-        println("URL")
-        ""
-    }
-    catch(e: Exception) {
-        println("Local")
-        ""
+    // Deserializes the head object from the raw resource
+    val head: Head = deserialize(script)
+    
+    // Asks for user permission
+    println("Proceed with the installation? [y\\n]")
+    print(">> ").also { System.out.flush() }
+    if (readLine().toString().toLowerCase()[0] == 'n') {
+        println("\nTerminating installation")
+        exitProcess(0)
     }
 
-    exitProcess(0)
+    // Get priority queue
+
+    /*
     val head = deserialize(raw)
 
     if (head.packageManager != null || head.custom != null)
@@ -220,6 +221,8 @@ fun install(script: String) {
     }
 
     println("\nDone installing packages..")
+
+     */
 }
 
 fun main() {
@@ -266,8 +269,6 @@ fun main() {
 
         install(script)
     }
-
-    install("")
 }
 
 fun test() {
