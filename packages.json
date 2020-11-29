@@ -133,6 +133,10 @@
         {
           "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
           "package": "scenebuilder"
+        },
+        {
+          "flags": [ "-S", "--answerclean All", "--nodiffmenu" ],
+          "package": "openrazer-meta"
         }
       ]
     }
@@ -151,6 +155,13 @@
         "prioritize": true,
         "url": "https://raw.githubusercontent.com/NoakPalander/MultiInstaller/master/install_script.kts",
         "message": "Building 'yay' from source via a weblink"
+      }
+    },
+    {
+      "web": {
+        "prioritize": true,
+        "url": "todo... write install script for 'sudo gpasswd $USER plugdev",
+        "message": "Setting up razer.."
       }
     }
   ]
