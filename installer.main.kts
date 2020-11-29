@@ -12,7 +12,9 @@ import java.io.File
 import java.io.FileReader
 import java.net.MalformedURLException
 import java.net.URL
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.HashMap
 import kotlin.system.exitProcess
 
 
@@ -48,13 +50,13 @@ data class WebCustom(
 )
 
 data class Custom(
-    @JsonProperty("local") val local: LocalCustom?,
-    @JsonProperty("web") val web: WebCustom?
+    @JsonProperty("local") val local: LocalCustom? = null,
+    @JsonProperty("web") val web: WebCustom? = null
 )
 
 data class Head(
-    @JsonProperty("package_manager") val packageManager: List<PackageManager>?,
-    @JsonProperty("custom") val custom: List<Custom>?
+    @JsonProperty("package_manager") val packageManager: List<PackageManager>? = null,
+    @JsonProperty("custom") val custom: List<Custom>? = null
 )
 
 class Arguments {
@@ -166,14 +168,35 @@ fun install(script: String) {
     val head: Head = deserialize(script)
     
     // Asks for user permission
-    println("Proceed with the installation? [y\\n]")
-    print(">> ").also { System.out.flush() }
-    if (readLine().toString().toLowerCase()[0] == 'n') {
-        println("\nTerminating installation")
-        exitProcess(0)
+    //println("Proceed with the installation? [y\\n]")
+    //print(">> ").also { System.out.flush() }
+    //if (readLine().toString().toLowerCase()[0] == 'n') {
+    //    println("\nTerminating installation")
+    //    exitProcess(0)
+    //}
+
+    // TODO: Get priority queue
+    val packages = mutableListOf<Head>()
+
+    // Iterates over the custom packages and adds them to the queue if they're prioritized
+    head.custom?.forEach { custom ->
+        custom.local?.takeIf { it.prioritize }?.let { local -> packages.add(Head(custom = listOf(Custom(local = local)))) }
+        custom.web?.takeIf { it.prioritize }?.let { web -> packages.add(Head(custom = listOf(Custom(web = web)))) }
     }
 
-    // Get priority queue
+    // TODO: Remove everything within 'packages' from 'head' (no duplications)
+
+    // Adds the package managers' packages
+    head.packageManager?.forEach {
+        it.packages.forEach { module ->
+
+        }
+        for (module in it.packages) {
+            val command = "${if (it.sudo) "sudo " else ""}${it.type} ${module.flags.joinToString(" ")} ${module.app}"
+            command.runAsProcess()
+        }
+    }
+
 
     /*
     val head = deserialize(raw)
